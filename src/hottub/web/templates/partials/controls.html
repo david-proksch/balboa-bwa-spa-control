@@ -1,0 +1,28 @@
+{# Pumps and heat mode. Each button posts its value and gets this part back. #}
+{% macro choice(address, label, choices, current, hint=None) %}
+  <div class="control">
+    <span class="control-label" id="label-{{ address }}">{{ label }}</span>
+    <div class="segmented" role="group" aria-labelledby="label-{{ address }}">
+      {% for value, text in choices %}
+      <button type="button" aria-pressed="{{ "true" if value == current else "false" }}"
+              hx-post="{{ base }}/ui/{{ address }}" hx-vals='{"value": "{{ value }}"}'
+              hx-target="#controls" hx-swap="outerHTML" hx-disabled-elt="#controls button"
+              {%- if not tub.known %} disabled{% endif %}>{{ text }}</button>
+      {% endfor %}
+    </div>
+    {% if hint %}<p class="hint">{{ hint }}</p>{% endif %}
+  </div>
+{% endmacro %}
+<section id="controls" class="card"
+         hx-get="{{ base }}/ui/controls" hx-trigger="every 15s" hx-swap="outerHTML"
+         {%- if oob %} hx-swap-oob="true"{% endif %}>
+  <h2>Controls</h2>
+  {{ choice("pump1", "Pump 1", pump1_choices, tub.pump1,
+            "The spa keeps pump 1 on low while it heats or filters, and switches pumps off by itself after a while.") }}
+  {{ choice("pump2", "Pump 2", pump2_choices, tub.pump2) }}
+  {{ choice("heat-mode", "Heat mode", heat_mode_choices, tub.heat_mode,
+            "Ready keeps the water at the set temperature. Rest heats only while filtering.") }}
+  {% if error %}
+  <p class="error" role="alert">{{ error }}</p>
+  {% endif %}
+</section>

@@ -1,0 +1,10 @@
+{# Active alerts, on every page. Fetches itself every 30 seconds. Empty when all is well. #}
+<div id="banner" hx-get="{{ base }}/ui/banner" hx-trigger="every 30s" hx-swap="outerHTML"
+     {%- if oob %} hx-swap-oob="true"{% endif %}>
+  {% for alert in alerts %}
+  <p class="alert {{ "critical" if alert.critical else "warning" }}" role="alert">
+    <strong>{{ alert.title }}.</strong> {{ alert.message }}
+    <a href="{{ base }}/alerts">Details</a>
+  </p>
+  {% endfor %}
+</div>

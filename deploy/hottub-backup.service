@@ -1,0 +1,50 @@
+# Copies the database to /var/lib/hottub/backups once; started nightly by
+# hottub-backup.timer. Runs as the same user in the same kind of sandbox
+# as the service, minus the network, which it does not need.
+#
+# Run it by hand:   sudo systemctl start hottub-backup
+# See what it did:  journalctl -u hottub-backup -n 20
+# Restoring a copy: docs/operations.md, "Restoring the database".
+
+[Unit]
+Description=Hot tub controller: back up the database
+Documentation=file:///opt/hottub/docs/operations.md
+
+[Service]
+Type=oneshot
+User=hottub
+Group=hottub
+WorkingDirectory=/var/lib/hottub
+ExecStart=/opt/hottub/venv/bin/python -m hottub.backup
+Environment=PYTHONDONTWRITEBYTECODE=1
+
+StateDirectory=hottub
+StateDirectoryMode=0700
+UMask=0077
+
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+PrivateNetwork=true
+ProtectProc=invisible
+ProcSubset=pid
+NoNewPrivileges=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictNamespaces=true
+RestrictRealtime=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX
+MemoryMax=100M

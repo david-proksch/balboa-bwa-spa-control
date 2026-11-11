@@ -1,0 +1,15 @@
+{# Whether alerts reach a phone, and a button to try it. #}
+<section id="notify" class="card"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <h2>Notifications</h2>
+  {% if configured %}
+  <p>Critical alerts are sent to your phone through Pushover.</p>
+  <button type="button" hx-post="{{ base }}/ui/settings/test-notification"
+          hx-target="#notify" hx-swap="outerHTML" hx-disabled-elt="this">Send a test notification</button>
+  {% else %}
+  <p>No Pushover keys are configured, so alerts appear on these pages only.</p>
+  <p class="hint">The keys go in <code>/etc/hottub/secrets.env</code> on the Pi; see the README.</p>
+  {% endif %}
+  {% if result %}
+  <p class="{{ "error" if failed else "saved" }}" role="status">{{ result }}</p>
+  {% endif %}
+</section>

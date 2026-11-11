@@ -1,0 +1,15 @@
+{# The tub now. Fetches itself again every 5 seconds. #}
+<section id="reading" class="reading{% if tub.heating %} is-heating{% endif %}"
+         hx-get="{{ base }}/ui/reading" hx-trigger="every 5s" hx-swap="outerHTML"
+         {%- if oob %} hx-swap-oob="true"{% endif %}>
+  <h1 class="reading-label">Water temperature</h1>
+  <p class="reading-value">{{ tub.water }}<span class="unit">°F</span></p>
+  <dl class="facts">
+    <div><dt>Set to</dt><dd>{{ tub.target }} °F</dd></div>
+    <div><dt>Heater</dt><dd>{{ tub.heater }}</dd></div>
+    <div><dt>Range</dt><dd>{{ tub.floor }} to {{ tub.ceiling }} °F</dd></div>
+  </dl>
+  {% if tub.problem %}
+  <p class="note warn" role="status">{{ tub.problem }}</p>
+  {% endif %}
+</section>

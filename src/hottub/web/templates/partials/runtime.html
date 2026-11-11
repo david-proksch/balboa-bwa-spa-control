@@ -1,0 +1,24 @@
+{# Running time of heater and pumps. Fetches itself every 5 minutes. #}
+<section id="runtime" class="card"
+         hx-get="{{ base }}/ui/runtime" hx-trigger="every 300s" hx-swap="outerHTML"
+         {%- if oob %} hx-swap-oob="true"{% endif %}>
+  <h2>Running time</h2>
+  <table>
+    <thead>
+      <tr><th scope="col">Last</th><th scope="col">Heater</th><th scope="col">Pump 1</th><th scope="col">Pump 2</th></tr>
+    </thead>
+    <tbody>
+      {% for row in runtime.rows %}
+      <tr>
+        <th scope="row">{{ row.label }}{% if row.partial %}<abbr title="Records do not go back this far">*</abbr>{% endif %}</th>
+        <td>{{ row.heater }} h</td>
+        <td>{{ row.pump1 }} h <span class="muted">({{ row.pump1_high }} high)</span></td>
+        <td>{{ row.pump2 }} h</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if runtime.note %}
+  <p class="hint">{{ runtime.note }}</p>
+  {% endif %}
+</section>

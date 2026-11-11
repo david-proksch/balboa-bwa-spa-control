@@ -1,0 +1,25 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Local development database
+*.db
+*.db-wal
+*.db-shm
+
+# macOS Finder
+.DS_Store
+
+# Settings for running the app from the Claude desktop app; they hold
+# paths on the developer's own machine.
+.claude/
+
+# Settings for running against your own tub; copied from hottub.dev.example.toml
+hottub.dev.toml

@@ -1,0 +1,87 @@
+# The hot tub controller, as a confined systemd service.
+#
+# Installed to /etc/systemd/system/hottub.service by deploy/install.sh.
+# What each group of settings is for is explained in PLAN.md, section 6
+# ("systemd confinement"); day-to-day commands are in docs/operations.md.
+#
+# After editing this file on the Pi:
+#   sudo systemctl daemon-reload && sudo systemctl restart hottub
+# To see how tightly the service is confined:
+#   systemd-analyze security hottub
+
+[Unit]
+Description=Hot tub controller
+Documentation=file:///opt/hottub/docs/operations.md
+# The spa is found over the network, and schedules depend on the clock.
+Wants=network-online.target
+After=network-online.target time-sync.target
+
+[Service]
+Type=exec
+User=hottub
+Group=hottub
+WorkingDirectory=/var/lib/hottub
+ExecStart=/opt/hottub/venv/bin/python -m hottub
+
+# Settings come from /etc/hottub/hottub.toml (the application's default).
+# The Pushover keys come from this file, which only root and the service
+# can read. It must exist; install.sh creates it with no keys in it.
+EnvironmentFile=/etc/hottub/secrets.env
+# Python must not try to write .pyc files beside the read-only code.
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+
+# /var/lib/hottub, owned by the service and closed to everyone else. It
+# is the only place the service can write.
+StateDirectory=hottub
+StateDirectoryMode=0700
+UMask=0077
+
+# --- Filesystem: the whole system read-only, home directories invisible ---
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectProc=invisible
+ProcSubset=pid
+
+# --- Privileges: none, and no way to gain any ---
+NoNewPrivileges=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictNamespaces=true
+RestrictRealtime=true
+RemoveIPC=true
+
+# --- Kernel surface ---
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+# A system call outside the filter fails with "not permitted" instead of
+# killing the service, so an unexpected one shows up as a logged error.
+SystemCallErrorNumber=EPERM
+SystemCallArchitectures=native
+
+# --- Network ---
+# IP sockets, for the spa, nginx and Pushover. AF_NETLINK is what the C
+# library uses to look up the machine's own addresses when resolving a
+# host name (api.pushover.net). Outbound traffic is not limited by
+# address: Pushover has no fixed address range to allow.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+
+# --- Resources and restarts ---
+MemoryMax=200M
+TasksMax=64
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

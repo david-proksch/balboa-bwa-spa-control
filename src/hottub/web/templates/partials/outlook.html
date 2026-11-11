@@ -1,0 +1,13 @@
+{# What the scheduler is doing and will do next. Fetches itself every 30 seconds. #}
+<section id="outlook" class="card"
+         hx-get="{{ base }}/ui/outlook" hx-trigger="every 30s" hx-swap="outerHTML"
+         {%- if oob %} hx-swap-oob="true"{% endif %}>
+  <h2>Schedule</h2>
+  <p class="now">{{ outlook.current }}</p>
+  {% if outlook.upcoming %}
+  <p class="next"><span class="muted">Next:</span> {{ outlook.upcoming }}</p>
+  {% endif %}
+  {% for warning in outlook.warnings %}
+  <p class="note warn" role="status">{{ warning }}</p>
+  {% endfor %}
+</section>

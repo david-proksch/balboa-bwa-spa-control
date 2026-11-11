@@ -1,0 +1,25 @@
+# Settings for the hot tub controller on the Pi.
+#
+# Installed as /etc/hottub/hottub.toml by deploy/install.sh on the first
+# install only; later deploys never overwrite it, so edit it freely.
+# After editing:  sudo systemctl restart hottub
+#
+# Every key and its default is described at the top of
+# /opt/hottub/venv/lib/python3*/site-packages/hottub/config.py. Anything
+# left out here takes its default. The floor, ceiling, hold time and the
+# weekend switch are not here: they are set on the web page.
+#
+# The Pushover keys do NOT go here; see /etc/hottub/secrets.env.
+
+[spa]
+# Which spa to use: the six characters after "BWGSpa_" in the network name
+# the spa's Wi-Fi module advertises. The spa is found by broadcast, so a
+# changed IP address does not matter. Without it, the first spa that
+# answers is used, which is fine when there is only one.
+# mac_suffix = "ABCDEF"
+
+[schedule]
+# timezone = "America/Detroit"   # omit to use the Pi's own (see: timedatectl)
+weekend_start = "15:00"
+blackout_start = "01:00"
+blackout_end = "12:00"

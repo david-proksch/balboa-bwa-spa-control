@@ -1,0 +1,40 @@
+{# Planned use for today and tomorrow, and the weekend switch.
+   Not refreshed on a timer: that would undo a time being chosen. #}
+<section id="plans" class="card"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <h2>Planned use</h2>
+  <p class="hint">Say when you want to get in. The tub will be warm an hour before.</p>
+  {% for day in days %}
+  <form class="plan" hx-post="{{ base }}/ui/plan/{{ day.key }}" hx-target="#plans" hx-swap="outerHTML">
+    <label for="use-{{ day.key }}">{{ day.label }} <span class="muted">{{ day.day }}</span></label>
+    <div class="row">
+      <select id="use-{{ day.key }}" name="use_time" required>
+        <option value=""{% if not day.use_time %} selected{% endif %}>Choose a time</option>
+        {% for value, label in day.choices %}
+        <option value="{{ value }}"{% if value == day.use_time %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="primary">{{ "Change" if day.use_time else "Plan" }}</button>
+      {% if day.use_time %}
+      <button type="button" hx-post="{{ base }}/ui/plan/{{ day.key }}/cancel"
+              hx-target="#plans" hx-swap="outerHTML">Cancel</button>
+      {% endif %}
+    </div>
+    {% if day.summary %}
+    <p class="note{% if day.late %} warn{% endif %}">{{ day.summary }}</p>
+    {% endif %}
+  </form>
+  {% endfor %}
+  <div class="weekend">
+    <div>
+      <span class="control-label" id="label-weekend">Weekend keep-ready</span>
+      <p class="hint">{{ weekend.description }}</p>
+    </div>
+    <button type="button" class="switch" role="switch" aria-labelledby="label-weekend"
+            aria-checked="{{ "true" if weekend.enabled else "false" }}"
+            hx-post="{{ base }}/ui/weekend" hx-vals='{"value": "{{ "off" if weekend.enabled else "on" }}"}'
+            hx-target="#plans" hx-swap="outerHTML">{{ "On" if weekend.enabled else "Off" }}</button>
+  </div>
+  {% if error %}
+  <p class="error" role="alert">{{ error }}</p>
+  {% endif %}
+</section>

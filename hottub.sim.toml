@@ -1,0 +1,16 @@
+# Configuration for running with the SIMULATED tub on a developer's machine.
+#
+#   HOTTUB_CONFIG=hottub.sim.toml uv run python -m hottub
+#
+# It uses its own port and its own database, so it can run beside an
+# instance that is talking to the real tub (hottub.dev.toml, port 8100)
+# without the two sharing plans or history.
+
+[spa]
+adapter = "fake"
+
+[web]
+port = 8101
+
+[database]
+path = "hottub-sim.db"  # in the project directory; ignored by git

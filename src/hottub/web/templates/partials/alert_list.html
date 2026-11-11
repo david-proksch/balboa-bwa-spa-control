@@ -1,0 +1,43 @@
+{# The alerts page's content: what stands now, then the recent history. #}
+<div id="alert-list"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <section class="card">
+    <h2>Active</h2>
+    {% for alert in active %}
+    <article class="alert-item {{ "critical" if alert.critical else "warning" }}">
+      <h3>{{ alert.title }} <span class="badge">{{ "Critical" if alert.critical else "Warning" }}</span></h3>
+      <p>{{ alert.message }}</p>
+      <p class="muted">Since {{ alert.raised }}</p>
+      {% if alert.can_acknowledge %}
+      <button type="button" hx-post="{{ base }}/ui/alerts/{{ alert.id }}/acknowledge"
+              hx-target="#alert-list" hx-swap="outerHTML">Acknowledge</button>
+      {% else %}
+      <p class="hint">Clears by itself when its cause is gone.</p>
+      {% endif %}
+    </article>
+    {% else %}
+    <p>Nothing is wrong.</p>
+    {% endfor %}
+    {% if error %}
+    <p class="error" role="alert">{{ error }}</p>
+    {% endif %}
+  </section>
+  <section class="card">
+    <h2>Last {{ days }} days</h2>
+    {% if history %}
+    <table>
+      <thead><tr><th scope="col">What</th><th scope="col">From</th><th scope="col">Until</th></tr></thead>
+      <tbody>
+        {% for alert in history %}
+        <tr>
+          <td><strong>{{ alert.title }}</strong><br><span class="muted">{{ alert.message }}</span></td>
+          <td>{{ alert.raised }}</td>
+          <td>{{ alert.cleared }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">No earlier alerts.</p>
+    {% endif %}
+  </section>
+</div>

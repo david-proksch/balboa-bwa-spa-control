@@ -1,0 +1,20 @@
+{# Floor and ceiling. #}
+<section id="band" class="card"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <h2>Temperature range</h2>
+  <p class="hint">The tub is heated to the ceiling when it should be ready, and may cool to the floor otherwise.</p>
+  <form hx-post="{{ base }}/ui/settings/band" hx-target="#band" hx-swap="outerHTML">
+    <div class="fields">
+      <label>Floor
+        <span class="with-unit"><input type="number" name="floor" value="{{ tub.floor }}" min="50" max="104" step="1" required> °F</span>
+      </label>
+      <label>Ceiling
+        <span class="with-unit"><input type="number" name="ceiling" value="{{ tub.ceiling }}" min="50" max="104" step="1" required> °F</span>
+      </label>
+    </div>
+    <button type="submit" class="primary">Save</button>
+    {% if saved %}<span class="saved" role="status">Saved.</span>{% endif %}
+  </form>
+  {% if error %}
+  <p class="error" role="alert">{{ error }}</p>
+  {% endif %}
+</section>

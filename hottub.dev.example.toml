@@ -1,0 +1,24 @@
+# Configuration for running on a developer's machine against the REAL tub.
+#
+# Copy this file to hottub.dev.toml (which git ignores), put in your spa's
+# MAC suffix, then:
+#
+#   HOTTUB_CONFIG=hottub.dev.toml uv run python -m hottub
+#
+# For the simulated tub use hottub.sim.toml instead.
+# The Pi's own file is /etc/hottub/hottub.toml; every key is described in
+# src/hottub/config.py.
+
+[spa]
+adapter = "balboa"
+mac_suffix = "ABCDEF"   # yours: the six characters after "BWGSpa_"
+
+[schedule]
+# Off, so that starting the application here does not take over the tub's
+# set temperature: with the scheduler on and nothing planned, the tub is set
+# to the floor. Plans can still be stored and forecast. HOTTUB_SCHEDULER=on
+# overrides this.
+enabled = false
+
+[database]
+path = "hottub-dev.db"  # in the project directory; ignored by git

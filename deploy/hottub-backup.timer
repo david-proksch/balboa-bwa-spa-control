@@ -1,0 +1,15 @@
+# Starts hottub-backup.service once a night.
+#
+# When it last ran and will next run:  systemctl list-timers hottub-backup
+
+[Unit]
+Description=Hot tub controller: nightly database backup
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+# If the Pi was off at 03:30, make the copy soon after it comes back.
+Persistent=true
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

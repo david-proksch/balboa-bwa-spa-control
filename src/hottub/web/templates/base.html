@@ -1,0 +1,35 @@
+{# The frame every page shares: header, alerts banner, footer.
+   A page fills in the "main" block. How the parts refresh themselves is
+   explained at the top of hottub/web/pages.py. #}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% if title != "Hot tub" %}{{ title }} · {% endif %}Hot tub</title>
+  <link rel="stylesheet" href="{{ base }}/static/app.css?v={{ version }}">
+  <script src="{{ base }}/static/vendor/htmx-2.0.4.min.js" defer></script>
+  <script src="{{ base }}/static/app.js?v={{ version }}" defer></script>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="{{ base }}/">Hot tub</a>
+    <nav aria-label="Pages">
+      <a href="{{ base }}/"{% if page == "dashboard" %} aria-current="page"{% endif %}>Dashboard</a>
+      <a href="{{ base }}/alerts"{% if page == "alerts" %} aria-current="page"{% endif %}>Alerts</a>
+      <a href="{{ base }}/settings"{% if page == "settings" %} aria-current="page"{% endif %}>Settings</a>
+    </nav>
+  </header>
+  <p id="offline" class="offline" role="status" hidden>
+    Cannot reach the hot tub controller. What you see may be out of date.
+  </p>
+  {{ banner }}
+  <main>
+    {% block main %}{% endblock %}
+  </main>
+  <footer>
+    Hot tub controller {{ version }} · <a href="{{ base }}/api/docs">API reference</a>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{# How long the tub is kept warm after a planned use time. #}
+<section id="hold" class="card"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <h2>Planned use</h2>
+  <p class="hint">How long the tub is kept at the ceiling after the time you planned to get in.</p>
+  <form hx-post="{{ base }}/ui/settings/hold" hx-target="#hold" hx-swap="outerHTML">
+    <div class="fields">
+      <label>Keep warm for
+        <span class="with-unit"><input type="number" name="hours" value="{{ hours }}" min="0.5" max="12" step="0.5" required> hours</span>
+      </label>
+    </div>
+    <button type="submit" class="primary">Save</button>
+    {% if saved %}<span class="saved" role="status">Saved.</span>{% endif %}
+  </form>
+  {% if error %}
+  <p class="error" role="alert">{{ error }}</p>
+  {% endif %}
+</section>

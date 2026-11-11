@@ -1,0 +1,151 @@
+[project]
+name = "hottub"
+version = "0.1.0"
+description = "Web app and controller for a Balboa (BWA) hot tub: scheduling, runtime history and alerts."
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = [
+    "alembic>=1.13",
+    "fastapi>=0.115",
+    "jinja2>=3.1",
+    "pybalboa>=1.1.4",
+    "sqlalchemy>=2.0",
+    "uvicorn>=0.30",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.27",
+    "import-linter>=2.0",
+    "mypy>=1.11",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14.0"]
+build-backend = "uv_build"
+
+# --- Tests -------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Every `async def test_...` runs on an event loop without a decorator.
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    # Starlette's test client now prefers a successor package to httpx. The
+    # tests work with httpx; revisit when upgrading FastAPI.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]
+
+# --- Type checking -----------------------------------------------------------
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src", "tests"]
+
+# --- Lint and format ---------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",  # pycodestyle, pyflakes
+    "I",            # import order
+    "B",            # likely bugs
+    "UP",           # modern syntax
+    "N",            # naming
+    "SIM",          # simplifications
+    "SLF",          # private member access
+    "D",            # docstrings: this code is maintained by people
+    "RUF",
+]
+
+[tool.ruff.lint.flake8-bugbear]
+# Temperature and TemperatureBand are immutable value objects, so using one
+# as a default is as safe as using a number.
+extend-immutable-calls = [
+    "hottub.domain.Temperature",
+    "hottub.domain.temperature.Temperature",
+    "hottub.domain.TemperatureBand",
+    "hottub.domain.BlackoutWindow",
+    "hottub.domain.WatchdogThresholds",
+    "datetime.time",
+    "zoneinfo.ZoneInfo",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# Test names describe the behaviour; a docstring would repeat them.
+"tests/**" = ["D"]
+
+# --- Architecture rules ------------------------------------------------------
+# Enforced by `uv run lint-imports`. See PLAN.md section 3: module boundaries
+# are what keep the monolith maintainable, so they are checked, not trusted.
+
+[tool.importlinter]
+root_package = "hottub"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "The domain does not depend on frameworks or libraries"
+type = "forbidden"
+source_modules = ["hottub.domain"]
+forbidden_modules = [
+    "pybalboa", "fastapi", "starlette", "pydantic", "uvicorn",
+    "sqlalchemy", "alembic", "jinja2", "httpx",
+]
+
+[[tool.importlinter.contracts]]
+name = "Dependencies point inward, towards the domain"
+type = "layers"
+# Higher layers may import lower ones, never the reverse. Modules joined by
+# "|" share a layer and may not import each other.
+layers = [
+    "hottub.app",
+    "hottub.web",
+    "hottub.scheduler | hottub.watchdog",
+    "hottub.control | hottub.telemetry",
+    "hottub.spa | hottub.persistence",
+    "hottub.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Only the spa package uses the Balboa library"
+type = "forbidden"
+source_modules = [
+    "hottub.app", "hottub.config", "hottub.control", "hottub.persistence", "hottub.scheduler",
+    "hottub.telemetry", "hottub.watchdog", "hottub.web",
+]
+forbidden_modules = ["pybalboa"]
+# These three contracts look at direct imports only: the composition root
+# must import hottub.spa and hottub.persistence, which import the libraries.
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Only the persistence package uses the database libraries"
+type = "forbidden"
+source_modules = [
+    "hottub.app", "hottub.config", "hottub.control", "hottub.scheduler", "hottub.spa",
+    "hottub.telemetry", "hottub.watchdog", "hottub.web",
+]
+forbidden_modules = ["sqlalchemy", "alembic"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Only the web package and the composition root use the web framework"
+type = "forbidden"
+source_modules = [
+    "hottub.config", "hottub.control", "hottub.persistence", "hottub.scheduler", "hottub.spa",
+    "hottub.telemetry", "hottub.watchdog",
+]
+forbidden_modules = ["fastapi", "starlette", "pydantic", "uvicorn", "jinja2", "markupsafe"]
+allow_indirect_imports = true
